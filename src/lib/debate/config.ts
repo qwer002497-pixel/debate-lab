@@ -2,7 +2,7 @@
 // Phase 3에서 서버도 같은 규칙으로 요청을 검증해야 하므로 컴포넌트 밖에 둔다.
 // (브라우저 검증은 우회될 수 있으므로 서버 검증이 반드시 필요하다.)
 
-import type { DebatePurpose, RoundCount } from "@/types/debate";
+import type { DebatePurpose, DebateRequest, RoundCount } from "@/types/debate";
 
 export const PURPOSE_OPTIONS: {
   value: DebatePurpose;
@@ -53,4 +53,40 @@ export function validateTopic(topic: string): string | null {
   if (length > TOPIC_MAX_LENGTH)
     return `주제는 ${TOPIC_MAX_LENGTH}자 이하로 입력해 주세요.`;
   return null;
+}
+
+export function isDebatePurpose(value: unknown): value is DebatePurpose {
+  return PURPOSE_OPTIONS.some((o) => o.value === value);
+}
+
+export function isRoundCount(value: unknown): value is RoundCount {
+  return ROUND_OPTIONS.includes(value as RoundCount);
+}
+
+/**
+ * 서버용 요청 검증. 브라우저에서 온 JSON은 어떤 모양이든 올 수 있으므로
+ * 타입을 믿지 않고(unknown) 필드 하나하나를 확인한다.
+ */
+export function parseDebateRequest(
+  body: unknown,
+): { ok: true; value: DebateRequest } | { ok: false; message: string } {
+  if (typeof body !== "object" || body === null) {
+    return { ok: false, message: "요청 본문이 올바른 JSON 객체가 아닙니다." };
+  }
+  const { topic, purpose, rounds } = body as Record<string, unknown>;
+
+  if (typeof topic !== "string") {
+    return { ok: false, message: "topic은 문자열이어야 합니다." };
+  }
+  const topicError = validateTopic(topic);
+  if (topicError) return { ok: false, message: topicError };
+
+  if (!isDebatePurpose(purpose)) {
+    return { ok: false, message: "purpose 값이 허용된 토론 목적이 아닙니다." };
+  }
+  if (!isRoundCount(rounds)) {
+    return { ok: false, message: "rounds는 2, 3, 5 중 하나여야 합니다." };
+  }
+
+  return { ok: true, value: { topic: topic.trim(), purpose, rounds } };
 }

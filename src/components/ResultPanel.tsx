@@ -1,5 +1,5 @@
 // AI 한 개의 결과 패널. GPT와 Claude가 같은 컴포넌트를 쓰고 model prop으로만 구분한다.
-// 상태(대기/로딩/미연결/오류)마다 다른 화면을 보여준다. 실제 분석 결과 표시는 Phase 3에서 추가한다.
+// 상태(대기/로딩/미연결/오류/성공)마다 다른 화면을 보여준다.
 
 import type { ModelId, PanelState } from "@/types/debate";
 
@@ -19,6 +19,7 @@ const STATUS_BADGE: Record<
   loading: { label: "분석 중", className: "bg-indigo-100 text-indigo-700" },
   not_connected: { label: "API 미연결", className: "bg-amber-100 text-amber-800" },
   error: { label: "오류", className: "bg-red-100 text-red-700" },
+  success: { label: "분석 완료", className: "bg-emerald-100 text-emerald-800" },
 };
 
 interface ResultPanelProps {
@@ -48,10 +49,15 @@ export default function ResultPanel({ model, state }: ResultPanelProps) {
               {meta.name}
             </h2>
             <p className="text-xs text-slate-500">{meta.provider} · 독립 분석</p>
+            {state.status === "success" && (
+              <p className="font-mono text-xs whitespace-nowrap text-slate-400">
+                {state.model}
+              </p>
+            )}
           </div>
         </div>
         <span
-          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${badge.className}`}
         >
           {state.status === "loading" && (
             <span
@@ -108,6 +114,34 @@ function PanelBody({ name, state }: { name: string; state: PanelState }) {
         >
           <p className="font-semibold">분석 중 오류가 발생했습니다</p>
           <p>{state.message}</p>
+        </div>
+      );
+    case "success":
+      return (
+        <div className="flex flex-col gap-4">
+          {state.truncated && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
+              출력 토큰 상한에 도달해 답변 끝부분이 잘렸을 수 있습니다.
+            </p>
+          )}
+          {/* 모델 응답은 일반 텍스트로만 렌더링한다(HTML로 해석하지 않음). */}
+          <div className="whitespace-pre-wrap text-[15px] leading-7 text-slate-800">
+            {state.text}
+          </div>
+          <dl className="mt-auto flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-100 pt-3 font-mono text-xs text-slate-500">
+            <div className="flex gap-1">
+              <dt>입력</dt>
+              <dd>{state.usage.inputTokens.toLocaleString()} 토큰</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt>출력</dt>
+              <dd>{state.usage.outputTokens.toLocaleString()} 토큰</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt>소요</dt>
+              <dd>{(state.durationMs / 1000).toFixed(1)}초</dd>
+            </div>
+          </dl>
         </div>
       );
   }
