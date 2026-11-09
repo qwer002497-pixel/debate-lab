@@ -18,6 +18,7 @@ import type {
 } from "@/types/debate";
 import { postAnalyze, postRound, RequestFailure } from "./client-api";
 import { MODEL_IDS } from "./config";
+import { addToLedger, emptyLedger, type UsageLedger } from "./ledger";
 
 export type Slot<T> = { status: "idle" } | { status: "loading" } | { status: "done"; turn: T };
 export type Stage = { kind: "initial" } | { kind: "round"; round: number };
@@ -43,14 +44,6 @@ export interface DebateView {
   ledger: Record<ModelId, UsageLedger>;
 }
 
-export interface UsageLedger {
-  inputTokens: number;
-  outputTokens: number;
-  costUsd: number;
-  succeeded: number;
-  failed: number;
-}
-
 /** 요청을 만들 때 쓰는 원본 데이터 (DebateSession과 같은 모양, 향후 DB 저장 단위) */
 interface SessionData {
   request: DebateRequest | null;
@@ -60,7 +53,6 @@ interface SessionData {
 
 const IDLE = { status: "idle" } as const;
 const idleSlots = <T,>(): Record<ModelId, Slot<T>> => ({ gpt: IDLE, claude: IDLE });
-const emptyLedger = (): UsageLedger => ({ inputTokens: 0, outputTokens: 0, costUsd: 0, succeeded: 0, failed: 0 });
 
 const EMPTY_VIEW: DebateView = {
   request: null,
@@ -73,16 +65,6 @@ const EMPTY_VIEW: DebateView = {
   elapsedMs: 0,
   ledger: { gpt: emptyLedger(), claude: emptyLedger() },
 };
-
-function addToLedger(ledger: UsageLedger, turn: ModelTurn<object>): UsageLedger {
-  return {
-    inputTokens: ledger.inputTokens + (turn.usage?.inputTokens ?? 0),
-    outputTokens: ledger.outputTokens + (turn.usage?.outputTokens ?? 0),
-    costUsd: ledger.costUsd + (turn.estimatedCostUsd ?? 0),
-    succeeded: ledger.succeeded + (turn.status === "success" ? 1 : 0),
-    failed: ledger.failed + (turn.status === "error" ? 1 : 0),
-  };
-}
 
 export function stageLabel(stage: Stage): string {
   return stage.kind === "initial" ? "최초 분석" : `${stage.round}라운드`;

@@ -10,8 +10,11 @@ import {
   TOPIC_MAX_LENGTH,
   totalModelCalls,
 } from "@/lib/debate/config";
+import { dialogueModelCalls } from "@/lib/dialogue/config";
 
 interface DebateFormProps {
+  /** 라운드 라벨과 호출 수 안내만 모드에 따라 바뀐다 (기본: 분석형, 분석형 화면은 기존과 동일) */
+  mode?: "analysis" | "dialogue";
   topic: string;
   purpose: DebatePurpose;
   rounds: RoundCount;
@@ -27,6 +30,7 @@ const optionCardClass =
   "flex cursor-pointer flex-col gap-1 rounded-xl border border-slate-200 bg-white transition-colors hover:border-slate-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-indigo-400";
 
 export default function DebateForm({
+  mode = "analysis",
   topic,
   purpose,
   rounds,
@@ -117,7 +121,9 @@ export default function DebateForm({
       {/* 3. 라운드 선택 + 시작 버튼 */}
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <fieldset className="flex flex-col">
-          <legend className="mb-3 text-sm font-semibold">상호 검토 라운드</legend>
+          <legend className="mb-3 text-sm font-semibold">
+            {mode === "dialogue" ? "모델별 응답 횟수" : "상호 검토 라운드"}
+          </legend>
           <div className="flex gap-2">
             {ROUND_OPTIONS.map((value) => (
               <label
@@ -136,9 +142,15 @@ export default function DebateForm({
               </label>
             ))}
           </div>
-          <p className="mt-2 text-xs text-slate-500">
-            최초 분석 2회 + 라운드당 2회 = 모델 호출 총 {totalModelCalls(rounds)}회. 라운드가 많을수록 비용과 시간이 늘어납니다.
-          </p>
+          {mode === "dialogue" ? (
+            <p className="mt-2 text-xs text-slate-500">
+              첫 의견 2회 + 응답 {rounds * 2}회 + 마무리 2회 + 최종 비교 1회 = 모델 호출 총 {dialogueModelCalls(rounds) + 1}회. 응답은 한 번에 한 모델씩 진행되어 분석형보다 오래 걸립니다.
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-slate-500">
+              최초 분석 2회 + 라운드당 2회 = 모델 호출 총 {totalModelCalls(rounds)}회. 라운드가 많을수록 비용과 시간이 늘어납니다.
+            </p>
+          )}
         </fieldset>
 
         <button

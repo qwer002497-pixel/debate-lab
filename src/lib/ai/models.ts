@@ -66,6 +66,21 @@ export const MAX_OUTPUT_TOKENS = 2000;
 export const MAX_OUTPUT_TOKENS_ROUND = 3000;
 
 /**
+ * 대화형 토론의 최대 출력 토큰 (Phase 5).
+ * 발언(opening·reply)은 짧은 대화체(약 700자 요청, 검증 상한 1,500자)라 반론보다 작게,
+ * closing은 5개 항목 JSON이라 분석형 라운드에 가깝게 둔다.
+ */
+export const MAX_OUTPUT_TOKENS_DIALOGUE_SPEECH = 1500;
+export const MAX_OUTPUT_TOKENS_DIALOGUE_CLOSING = 2500;
+
+/**
+ * 최종 비교(P5-8)의 최대 출력 토큰.
+ * 목록 6개에 객체 배열이 섞여 있고, 실측에서 Claude closing이 이미 약 2,000 토큰을 썼으므로 여유를 둔다.
+ * 실제 측정(P5-8 재생 검증) 후 조정한다.
+ */
+export const MAX_OUTPUT_TOKENS_DIALOGUE_COMPARISON = 4000;
+
+/**
  * AI 제공사 API 한 번의 응답 대기 시간 상한 (밀리초).
  * 환경변수 AI_REQUEST_TIMEOUT_MS로 조정할 수 있다 (배포 환경 제한, 테스트용).
  */

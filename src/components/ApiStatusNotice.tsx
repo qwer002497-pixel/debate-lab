@@ -9,11 +9,11 @@ export default function ApiStatusNotice() {
     >
       <span aria-hidden className="mt-1.5 size-2 shrink-0 rounded-full bg-sky-400" />
       <p className="leading-6">
-        <strong className="font-semibold text-sky-300">현재 단계: 독립 분석 + 상호 반론</strong>{" "}
-        — GPT와 Claude가 먼저 각자 분석한 뒤, 선택한 라운드만큼 서로의 주장을 검토합니다. 종합
-        보고서와 결과 저장은 아직 구현되지 않았습니다.{" "}
+        <strong className="font-semibold text-sky-300">현재 단계: 분석형 · 대화형 토론</strong>{" "}
+        — GPT와 Claude가 각자 의견을 낸 뒤 서로의 주장을 검토합니다. 종합 보고서와 결과 저장은
+        아직 구현되지 않았으며, 새로고침하면 진행 중인 토론이 사라집니다.{" "}
         <strong className="font-semibold">
-          모델 호출마다 비용이 발생합니다 (2라운드 6회 · 3라운드 8회 · 5라운드 12회).
+          모델 호출마다 비용이 발생합니다 (2·3·5라운드 기준 분석형 6·8·12회, 대화형 9·11·15회 — 최종 비교 1회 포함).
         </strong>
       </p>
     </div>

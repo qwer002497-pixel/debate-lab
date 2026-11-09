@@ -1,28 +1,22 @@
-// 누적 토큰·예상 비용·응답 시간.
-// 재시도로 덮어쓴 이전 시도와, 실패했지만 과금된 호출(형식 오류 등)도 포함한다(useDebateSession의 ledger).
+// 누적 토큰·예상 비용·응답 시간 (분석형·대화형 공통).
+// 재시도로 덮어쓴 이전 시도와, 실패했지만 과금된 호출(형식 오류 등)도 포함한다(lib/debate/ledger.ts).
+// 모드마다 진행 상태 구조가 다르므로, 표시에 필요한 값만 props로 받는다.
 
-import { MODEL_IDS, totalModelCalls } from "@/lib/debate/config";
-import type { DebateView, UsageLedger } from "@/lib/debate/useDebateSession";
+import { MODEL_IDS } from "@/lib/debate/config";
+import { sumLedgers, type UsageLedger } from "@/lib/debate/ledger";
+import type { ModelId } from "@/types/debate";
 import { MODEL_META } from "./ModelPanel";
 
-export default function DebateStats({ view }: { view: DebateView }) {
-  if (!view.request) return null;
-  const all = MODEL_IDS.reduce<UsageLedger>(
-    (sum, id) => {
-      const l = view.ledger[id];
-      return {
-        inputTokens: sum.inputTokens + l.inputTokens,
-        outputTokens: sum.outputTokens + l.outputTokens,
-        costUsd: sum.costUsd + l.costUsd,
-        succeeded: sum.succeeded + l.succeeded,
-        failed: sum.failed + l.failed,
-      };
-    },
-    { inputTokens: 0, outputTokens: 0, costUsd: 0, succeeded: 0, failed: 0 },
-  );
-  const planned = totalModelCalls(view.request.rounds);
+interface DebateStatsProps {
+  ledger: Record<ModelId, UsageLedger>;
+  plannedCalls: number; // 이 토론에서 예정된 모델 호출 수
+  elapsedMs: number; // 단계별 실제 대기 시간의 합
+}
+
+export default function DebateStats({ ledger, plannedCalls, elapsedMs }: DebateStatsProps) {
+  const all = sumLedgers(ledger);
   const rows = [
-    ...MODEL_IDS.map((id) => ({ key: id, label: MODEL_META[id].name, t: view.ledger[id] })),
+    ...MODEL_IDS.map((id) => ({ key: id, label: MODEL_META[id].name, t: ledger[id] })),
     { key: "all", label: "합계", t: all },
   ];
 
@@ -34,8 +28,8 @@ export default function DebateStats({ view }: { view: DebateView }) {
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <p className="font-semibold text-white">누적 사용량</p>
         <p className="text-xs text-slate-400">
-          모델 호출 {all.succeeded + all.failed} / 예정 {planned}회 · 대기 시간{" "}
-          {(view.elapsedMs / 1000).toFixed(1)}초
+          모델 호출 {all.succeeded + all.failed} / 예정 {plannedCalls}회 · 대기 시간{" "}
+          {(elapsedMs / 1000).toFixed(1)}초
         </p>
       </div>
       <table className="w-full min-w-[22rem] font-mono text-xs">
