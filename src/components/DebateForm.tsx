@@ -1,4 +1,4 @@
-// 주제 입력, 토론 목적, 라운드 선택, 분석 시작 버튼.
+// 주제 입력, 토론 목적, 라운드 선택, 토론 시작 버튼.
 // 상태를 직접 갖지 않고 props로만 동작한다(값은 DebateWorkspace가 관리).
 // 이렇게 하면 폼은 "어떻게 보이는가"만, Workspace는 "무엇을 할 것인가"만 책임진다.
 
@@ -8,6 +8,7 @@ import {
   PURPOSE_OPTIONS,
   ROUND_OPTIONS,
   TOPIC_MAX_LENGTH,
+  totalModelCalls,
 } from "@/lib/debate/config";
 
 interface DebateFormProps {
@@ -136,7 +137,7 @@ export default function DebateForm({
             ))}
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            라운드가 많을수록 API 호출 횟수와 비용이 늘어납니다.
+            최초 분석 2회 + 라운드당 2회 = 모델 호출 총 {totalModelCalls(rounds)}회. 라운드가 많을수록 비용과 시간이 늘어납니다.
           </p>
         </fieldset>
 
@@ -145,7 +146,7 @@ export default function DebateForm({
           disabled={isSubmitting}
           className="h-12 rounded-xl bg-indigo-600 px-8 text-base font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          {isSubmitting ? "분석 중…" : "분석 시작"}
+          {isSubmitting ? "토론 진행 중…" : "토론 시작"}
         </button>
       </div>
     </form>

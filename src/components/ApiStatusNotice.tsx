@@ -1,5 +1,5 @@
 // 현재 구현 범위와 비용 발생 사실을 화면 상단에 표시한다.
-// Phase 4(상호 반론)가 구현되면 문구를 갱신한다.
+// Phase 5(최종 보고서)가 구현되면 문구를 갱신한다.
 
 export default function ApiStatusNotice() {
   return (
@@ -9,11 +9,11 @@ export default function ApiStatusNotice() {
     >
       <span aria-hidden className="mt-1.5 size-2 shrink-0 rounded-full bg-sky-400" />
       <p className="leading-6">
-        <strong className="font-semibold text-sky-300">현재 단계: 독립 분석</strong>{" "}
-        — GPT와 Claude가 서로의 답변을 보지 않고 각자 분석합니다. 상호 반론과
-        최종 보고서는 아직 구현되지 않았습니다.{" "}
+        <strong className="font-semibold text-sky-300">현재 단계: 독립 분석 + 상호 반론</strong>{" "}
+        — GPT와 Claude가 먼저 각자 분석한 뒤, 선택한 라운드만큼 서로의 주장을 검토합니다. 종합
+        보고서와 결과 저장은 아직 구현되지 않았습니다.{" "}
         <strong className="font-semibold">
-          분석 시작을 누를 때마다 두 API가 각각 1회 호출되어 비용이 발생합니다.
+          모델 호출마다 비용이 발생합니다 (2라운드 6회 · 3라운드 8회 · 5라운드 12회).
         </strong>
       </p>
     </div>

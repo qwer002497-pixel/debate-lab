@@ -9,13 +9,17 @@ import {
   MAX_OUTPUT_TOKENS,
   MAX_RETRIES,
   REQUEST_TIMEOUT_MS,
+  type CallOptions,
   type PromptInput,
   type ProviderOutput,
 } from "./models";
 
 const config = AI_MODELS.gpt;
 
-export async function analyzeWithOpenAI({ system, user }: PromptInput): Promise<ProviderOutput> {
+export async function analyzeWithOpenAI(
+  { system, user }: PromptInput,
+  options: CallOptions = {},
+): Promise<ProviderOutput> {
   const client = new OpenAI({
     apiKey: readApiKey(config.apiKeyEnv),
     timeout: REQUEST_TIMEOUT_MS,
@@ -28,9 +32,19 @@ export async function analyzeWithOpenAI({ system, user }: PromptInput): Promise<
       model: config.id,
       instructions: system,
       input: user,
-      max_output_tokens: MAX_OUTPUT_TOKENS,
+      max_output_tokens: options.maxOutputTokens ?? MAX_OUTPUT_TOKENS,
       reasoning: { effort: config.reasoningEffort },
       store: false, // 대화 내용을 OpenAI 쪽에 저장하지 않는다 (이어서 대화할 필요가 없음)
+      ...(options.jsonSchema && {
+        text: {
+          format: {
+            type: "json_schema",
+            name: options.jsonSchema.name,
+            schema: options.jsonSchema.schema,
+            strict: true,
+          },
+        },
+      }),
     });
   } catch (err) {
     throw toAiError(err);

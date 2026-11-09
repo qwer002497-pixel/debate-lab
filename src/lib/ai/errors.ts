@@ -16,6 +16,7 @@ const MESSAGES: Record<AnalysisErrorCode, string> = {
   provider_error: "AI 제공사 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   refused: "모델이 이 주제에 대한 응답을 거부했습니다.",
   empty_response: "AI가 빈 응답을 반환했습니다. 다시 시도해 주세요.",
+  invalid_format: "AI 응답이 요구한 형식이 아니어서 사용할 수 없습니다. 다시 시도해 주세요.",
   unknown: "알 수 없는 오류가 발생했습니다.",
 };
 

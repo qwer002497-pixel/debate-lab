@@ -9,13 +9,17 @@ import {
   MAX_OUTPUT_TOKENS,
   MAX_RETRIES,
   REQUEST_TIMEOUT_MS,
+  type CallOptions,
   type PromptInput,
   type ProviderOutput,
 } from "./models";
 
 const config = AI_MODELS.claude;
 
-export async function analyzeWithAnthropic({ system, user }: PromptInput): Promise<ProviderOutput> {
+export async function analyzeWithAnthropic(
+  { system, user }: PromptInput,
+  options: CallOptions = {},
+): Promise<ProviderOutput> {
   const client = new Anthropic({
     apiKey: readApiKey(config.apiKeyEnv),
     timeout: REQUEST_TIMEOUT_MS,
@@ -26,12 +30,17 @@ export async function analyzeWithAnthropic({ system, user }: PromptInput): Promi
   try {
     response = await client.messages.create({
       model: config.id,
-      max_tokens: MAX_OUTPUT_TOKENS,
+      max_tokens: options.maxOutputTokens ?? MAX_OUTPUT_TOKENS,
       // 사고(thinking) 토큰도 max_tokens에 포함된다. 도구를 쓰지 않는 요청에서
       // between_tools는 사고를 끄는 설정이라, 출력 상한 전체를 답변에 쓸 수 있다.
       thinking: { type: "between_tools" },
       system,
       messages: [{ role: "user", content: user }],
+      ...(options.jsonSchema && {
+        output_config: {
+          format: { type: "json_schema", schema: options.jsonSchema.schema },
+        },
+      }),
     });
   } catch (err) {
     throw toAiError(err);
